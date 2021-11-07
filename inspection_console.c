@@ -39,6 +39,9 @@ int main() {
         // Close PIPE
         close(fd_xtoi); 
         close(fd_ztoi); 
+        unlink(myfifo_xtoi);
+        unlink(myfifo_ztoi);
+        sleep(5);
 
         // Exit
         if (position_x[0] == '-' || position_z[0] == '-') 
@@ -63,6 +66,9 @@ int main() {
         // Close PIPE
         close(fd_itox); 
         close(fd_itoz); 
+        unlink(myfifo_itox);
+        unlink(myfifo_itoz);
+        sleep(5);
     }
     return 0;
 }

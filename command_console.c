@@ -14,9 +14,11 @@ int main() {
 
     // PIPE 
     char * myfifo_x = "/tmp/myfifo_x"; 
-    printf("%i", mkfifo(myfifo_x, 0666));
+    mkfifo(myfifo_x, 0666);
+    sleep(1);
     char * myfifo_z = "/tmp/myfifo_z"; 
-    mkfifo(myfifo_z, 0666);  
+    mkfifo(myfifo_z, 0666);
+    sleep(1);
 
     while (1) {
         // Open PIPE
@@ -38,7 +40,10 @@ int main() {
         // Close PIPE
         close(fd_x); 
         close(fd_z); 
-        
+        unlink(myfifo_x);
+        unlink(myfifo_z);
+        sleep(5);
+
         // Exit
         if (atoi(command) == 0) {
             write(fd_x, command, strlen(command)+1); 

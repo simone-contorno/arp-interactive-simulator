@@ -15,9 +15,9 @@ int main() {
 
     // PIPE 
     char * myfifo_z = "/tmp/myfifo_z"; 
-    //mkfifo(myfifo_z, 0666); 
+    mkfifo(myfifo_z, 0666); 
     char * myfifo_itoz = "/tmp/myfifo_itoz"; 
-    //mkfifo(myfifo_itoz, 0666); 
+    mkfifo(myfifo_itoz, 0666); 
     char * myfifo_ztoi = "/tmp/myfifo_ztoi"; 
     mkfifo(myfifo_ztoi, 0666); 
 
@@ -40,6 +40,8 @@ int main() {
 
         // Close PIPE
         close(fd_itoz);
+        unlink(myfifo_itoz);
+        sleep(5);
 
         /* --- Reading from Command console and Writing to Inspection console --- */
 
@@ -73,8 +75,9 @@ int main() {
         // Close PIPE
         close(fd_z);
         close(fd_ztoi);
-
-        sleep(1);
+        unlink(myfifo_z);
+        unlink(myfifo_ztoi);
+        sleep(5);
     }
     return 0;
 }
