@@ -5,79 +5,102 @@
 #include <sys/types.h> // PIPE
 #include <unistd.h> // write and close
 #include <stdlib.h> // EXIT_SUCCESS
+#include <pthread.h>
+
+void* getCommandInspection(void *ptr);
+
+// Variables
+int fd_x, fd_xi;
+char format_string[80] = "%d";
+char command_c[80], command_i[80], position[80];
+int number;
+int flag = 0;
+int speed = 0;
+int max_x = 60;
+
+// PIPE 
+char * myfifo_x = "/tmp/myfifo_x"; 
+//sleep(1);
+char * myfifo_xi = "/tmp/myfifo_xi"; 
+//sleep(1);
 
 int main() {
-    // Variables
-    int fd_x, fd_itox, fd_xtoi;
-    char command_c[80], command_i[80], position[80];
-    int speed = 0;
-    int max_x = 60;
+    pthread_t thread;
+    pthread_create(&thread, NULL, &getCommandInspection, NULL);
+    pthread_detach(thread);
 
-    // PIPE 
-    char * myfifo_x = "/tmp/myfifo_x"; 
-    mkfifo(myfifo_x, 0666); 
-    char * myfifo_itox = "/tmp/myfifo_itox"; 
-    mkfifo(myfifo_itox, 0666); 
-    char * myfifo_xtoi = "/tmp/myfifo_xtoi"; 
-    mkfifo(myfifo_xtoi, 0666); 
-
-    while (1) {
-        /* --- Reading from Inspection console --- */
-
-        // Open PIPE
-        fd_itox = open(myfifo_itox, O_RDONLY);
-        
-        // Get commands
-        read(fd_itox, command_i, 80); 
-
-        // Exec command
-        if (command_i == "R") {
-            position[80] = 0;
-            speed = 0;
-        }
-        else if (command_i == "S") 
-            speed = 0;
-
-        // Close PIPE
-        close(fd_itox);
-        unlink(myfifo_itox);
-        sleep(5);
-
-        /* --- Reading from Command console and Writing to Inspection console --- */
-
+    while (1) {           
         // Open PIPE
         fd_x = open(myfifo_x, O_RDONLY); 
-        fd_xtoi = open(myfifo_xtoi, O_WRONLY); 
-        
+            
         // Get commands
         read(fd_x, command_c, 80); 
+        printf("Command: %s", command_c);
+        
+        close(fd_x);
+        sleep(1);
+        
+        fd_xi = open(myfifo_xi, O_WRONLY); 
 
         // Exit
-        if (atoi(command_c) == 0) {
-            command_c[0] = '-';
-            write(fd_xtoi, command_c, strlen(command_c)+1); 
+        if (command_c[0] == 'q') {
+            write(fd_xi, command_c, strlen(command_c)+1); 
+            flag = 1;
             exit(EXIT_SUCCESS);
         }
 
+        sscanf(command_c, format_string, &number);
+        printf("Number: %i\n", number);
+
         // Exec task
-        switch (atoi(command_c)) {
+        switch (number) {
             case 1: speed += 1; break;
             case 2: speed -= 1; break;
             case 3: speed = 0; break;            
             default: break;
         }
-        command_c[80];
+        printf("Speed: %i\n", speed);
 
         // Send position to the Inspection console
-        position[80] += atoi(position) + 1;
-        write(fd_xtoi, position, strlen(position)+1);
-
+        sscanf(position, format_string, &number);
+        number += speed;
+        sprintf(position, format_string, number);
+        write(fd_xi, position, strlen(position)+1);
+        printf("Position: %s\n\n", position);
+            
         // Close PIPE
-        close(fd_x);
-        close(fd_xtoi);
-        unlink(myfifo_x);
-        unlink(myfifo_xtoi);
-        sleep(5);
+        close(fd_xi);
+        //sleep(1);
     }
     return 0;
+}
+
+void *getCommandInspection(void *ptr) {
+    while (1) {
+        if (flag == 1) 
+            exit(EXIT_SUCCESS);
+        
+        // Open PIPE
+        fd_xi = open(myfifo_xi, O_RDONLY);
+        
+        // Get commands
+        read(fd_xi, command_i, 80); 
+        
+        // Exec command
+        if (command_i[0] == 'R') {
+            number = 0;
+            sprintf(position, format_string, number);
+            speed = 0;
+            printf("Position: %s\n", position);
+            printf("Speed: %i\n", speed);
+        }
+        else if (command_i[0] == 'S') {
+            speed = 0;
+            printf("Speed: %i\n", speed);
+        }
+
+        // Close PIPE
+        close(fd_xi);
+        //sleep(1);
+    }
 }
