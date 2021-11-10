@@ -8,76 +8,81 @@
 
 int main() {
     // Variables
-    int fd_z, fd_itoz, fd_ztoi;
+    int fd_z, fd_zi;
+    char format_string[80] = "%i";
     char command_c[80], command_i[80], position[80];
+    int number;
     int speed = 0;
     int max_x = 60;
 
     // PIPE 
     char * myfifo_z = "/tmp/myfifo_z"; 
-    mkfifo(myfifo_z, 0666); 
-    char * myfifo_itoz = "/tmp/myfifo_itoz"; 
-    mkfifo(myfifo_itoz, 0666); 
-    char * myfifo_ztoi = "/tmp/myfifo_ztoi"; 
-    mkfifo(myfifo_ztoi, 0666); 
+    sleep(1);
+    char * myfifo_zi = "/tmp/myfifo_zi"; 
+    sleep(1);
 
     while (1) {
         /* --- Reading from Inspection console --- */
 
         // Open PIPE
-        fd_itoz = open(myfifo_itoz, O_RDONLY);
+        fd_zi = open(myfifo_zi, O_RDONLY);
         
         // Get commands
-        read(fd_itoz, command_i, 80); 
+        read(fd_zi, command_i, 80); 
+        //sscanf(command_i, format_string, number);
 
         // Exec command
-        if (command_i == "R") {
+        if (command_i[0] == 'R') {
             position[80] = 0;
             speed = 0;
         }
-        else if (command_i == "S") 
+        else if (command_i[0] == 'S') 
             speed = 0;
 
         // Close PIPE
-        close(fd_itoz);
-        unlink(myfifo_itoz);
-        sleep(5);
+        close(fd_zi);
+        //unlink(myfifo_xi);
+        sleep(1);
 
         /* --- Reading from Command console and Writing to Inspection console --- */
 
         // Open PIPE
         fd_z = open(myfifo_z, O_RDONLY); 
-        fd_ztoi = open(myfifo_ztoi, O_WRONLY); 
+        fd_zi = open(myfifo_zi, O_WRONLY); 
         
         // Get commands
         read(fd_z, command_c, 80); 
-
+        
         // Exit
-        if (atoi(command_c) == 0) {
-            command_c[0] = '-';
-            write(fd_ztoi, command_c, strlen(command_c)+1); 
+        if (command_c[0] == 'q') {
+            write(fd_zi, command_c, strlen(command_c)+1); 
             exit(EXIT_SUCCESS);
         }
 
+        sscanf(command_i, format_string, number);
+
         // Exec task
-        switch (atoi(command_c)) {
+        switch (number) {
             case 1: speed += 1; break;
             case 2: speed -= 1; break;
             case 3: speed = 0; break;            
             default: break;
         }
-        command_c[80];
+        number = 0;
 
         // Send position to the Inspection console
-        position[80] += atoi(position) + 1;
-        write(fd_ztoi, position, strlen(position)+1);
+        sscanf(position, format_string, number);
+        number += speed;
+        sprintf(position, format_string, number);
+        write(fd_zi, position, strlen(position)+1);
 
         // Close PIPE
         close(fd_z);
-        close(fd_ztoi);
         unlink(myfifo_z);
-        unlink(myfifo_ztoi);
-        sleep(5);
+        sleep(7);
+        close(fd_zi);
+        unlink(myfifo_zi);
+        sleep(7);
     }
     return 0;
 }

@@ -18,7 +18,7 @@ int main() {
     char * myfifo_zi = "/tmp/myfifo_zi"; 
     //sleep(1);
 
-    if (fork() == 0) { /* --- Writing to Motor X and Moror Z --- */
+    if (fork() > 0) { /* --- Writing to Motor X and Moror Z --- */
         while(1) {
             if (flag == 1)
                 exit(EXIT_SUCCESS);
@@ -46,7 +46,7 @@ int main() {
             //sleep(1);
         }
     }
-    else {
+    else { /* Reading from motor z and motor z */
         while (1) {
             // Open PIPE
             fd_xi = open(myfifo_xi, O_RDONLY); 

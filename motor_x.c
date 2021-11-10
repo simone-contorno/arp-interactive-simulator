@@ -22,7 +22,7 @@ int main() {
     char * myfifo_xi = "/tmp/myfifo_xi"; 
     //sleep(1);
 
-    if (fork() == 0) { /* Reading from Command console and Writing to Inspection console */
+    if (fork() > 0) { /* Reading from Command console and Writing to Inspection console */
         while (1) {           
             // Open PIPE
             fd_x = open(myfifo_x, O_RDONLY); 
