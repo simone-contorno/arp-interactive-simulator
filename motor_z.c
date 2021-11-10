@@ -5,61 +5,50 @@
 #include <sys/types.h> // PIPE
 #include <unistd.h> // write and close
 #include <stdlib.h> // EXIT_SUCCESS
+#include <signal.h>
 
-int main() {
-    // Variables
-    int fd_z, fd_zi;
-    char format_string[80] = "%i";
-    char command_c[80], command_i[80], position[80];
-    int number;
-    int speed = 0;
-    int max_x = 60;
+// Global variables
+int fd_z, fd_zi;
+char format_string[80] = "%d";
+char command_c[80], command_i[80], position[80];
+int number;
+int speed = 0;
+int max_x = 60;
+int str[5]; 
 
-    // PIPE 
-    char * myfifo_z = "/tmp/myfifo_z"; 
-    sleep(1);
-    char * myfifo_zi = "/tmp/myfifo_zi"; 
-    sleep(1);
+// PIPE 
+char * myfifo_z = "/tmp/myfifo_z"; 
+char * myfifo_zi = "/tmp/myfifo_zi"; 
 
-    while (1) {
-        /* --- Reading from Inspection console --- */
+static void signal_handler(int sig) {
+    if (sig == SIGUSR1) { // Command console 
+        fd_z = open(myfifo_z, O_RDONLY); 
+                
+        // Get command
+        read(fd_z, command_c, 80); 
+        printf("Command: %s", command_c); 
+        fflush(stdout);    
+        close(fd_z);
 
-        // Open PIPE
-        fd_zi = open(myfifo_zi, O_RDONLY);
-        
-        // Get commands
-        read(fd_zi, command_i, 80); 
-        //sscanf(command_i, format_string, number);
+        // Take pids
+        pid_t ic = str[1];
+        pid_t wd = str[4];
 
-        // Exec command
-        if (command_i[0] == 'R') {
-            position[80] = 0;
-            speed = 0;
-        }
-        else if (command_i[0] == 'S') 
-            speed = 0;
-
-        // Close PIPE
-        close(fd_zi);
-        //unlink(myfifo_xi);
+        // Send signals
+        kill(wd, 7); // to the watchdog
+        kill(ic, 10); // to the inspection console
         sleep(1);
 
-        /* --- Reading from Command console and Writing to Inspection console --- */
-
-        // Open PIPE
-        fd_z = open(myfifo_z, O_RDONLY); 
         fd_zi = open(myfifo_zi, O_WRONLY); 
-        
-        // Get commands
-        read(fd_z, command_c, 80); 
-        
+
         // Exit
         if (command_c[0] == 'q') {
             write(fd_zi, command_c, strlen(command_c)+1); 
             exit(EXIT_SUCCESS);
         }
 
-        sscanf(command_i, format_string, number);
+        sscanf(command_c, format_string, &number);
+        printf("Number: %i\n", number); fflush(stdout); 
 
         // Exec task
         switch (number) {
@@ -68,21 +57,94 @@ int main() {
             case 3: speed = 0; break;            
             default: break;
         }
-        number = 0;
+        printf("Speed: %i\n", speed); fflush(stdout); 
 
         // Send position to the Inspection console
-        sscanf(position, format_string, number);
+        sscanf(position, format_string, &number);
         number += speed;
         sprintf(position, format_string, number);
         write(fd_zi, position, strlen(position)+1);
+        printf("Position: %s\n\n", position); fflush(stdout); 
+                
+        // Close PIPE
+        close(fd_zi);
+    }
+
+    else if (sig == SIGUSR2) {
+        // Open PIPE
+        fd_zi = open(myfifo_zi, O_RDONLY);
+            
+        // Get commands
+        read(fd_zi, command_i, 80); 
+
+        // Take pid
+        pid_t wd = str[4];
+
+        // Send signal to the watchdog
+        kill(wd,7);
+
+        // Exec command
+        if (command_i[0] == 'R') {
+            number = 0;
+            sprintf(position, format_string, number);
+            speed = 0;
+            printf("Position: %s\n", position);
+            printf("Speed: %i\n", speed);
+        }
+        else if (command_i[0] == 'S') {
+            speed = 0;
+            printf("Speed: %i\n", speed);
+        }
 
         // Close PIPE
-        close(fd_z);
-        unlink(myfifo_z);
-        sleep(7);
         close(fd_zi);
-        unlink(myfifo_zi);
-        sleep(7);
     }
+
+    else if (sig == SIGALRM) {
+        printf("Watchdog alarm detected: reset speed and position!!\n"); fflush(stdout);
+        number = 0;
+        sprintf(position, format_string, number);
+        speed = 0;
+        printf("Position: %s\n", position); fflush(stdout);
+        printf("Speed: %i\n\n", speed);
+    }
+}
+
+int main() {
+    /*
+     * 1. Open PID.txt file that contain the pid for each process
+     * 2. Write the pid of this one
+     * 3. Read the pids of other processes
+     */
+    // 1.
+    char *filename = "/tmp/PID.txt";
+    FILE *file = fopen (filename, "a");
+    int pid = getpid();
+
+    // 2.
+    fprintf(file, "%d\n", pid);
+    fclose(file);
+
+    sleep(5);
+
+    // 3.
+    FILE *file_r = fopen (filename, "r");
+    fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2],&str[3],&str[4]);
+
+    while(1) {
+        // Read signal from the command console
+        signal(SIGUSR1, signal_handler);
+        // Read signal from the inspection console
+        signal(SIGUSR2, signal_handler);
+        // Read signal from the watchdog
+        signal(SIGALRM, signal_handler);
+
+        sleep(10);
+        number += speed;
+        sprintf(position, format_string, number);
+        printf("Update position: %s\n\n", position); 
+        fflush(stdout);
+    }
+
     return 0;
 }
