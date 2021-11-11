@@ -10,7 +10,8 @@
 // Global variables
 int fd_z, fd_zi;
 char format_string[80] = "%d";
-char command_c[80], command_i[80], position[80];
+char command_c[80], command_i[80];
+char position[80] = {'0'};
 int number;
 int speed = 0;
 int max_x = 60;
@@ -26,8 +27,7 @@ static void signal_handler(int sig) {
                 
         // Get command
         read(fd_z, command_c, 80); 
-        printf("Command: %s", command_c); 
-        fflush(stdout);    
+        printf("Command: %s", command_c); fflush(stdout);    
         close(fd_z);
 
         // Take pids
@@ -35,8 +35,8 @@ static void signal_handler(int sig) {
         pid_t wd = str[4];
 
         // Send signals
-        kill(wd, 7); // to the watchdog
-        kill(ic, 10); // to the inspection console
+        kill(wd, SIGPROF); // to the watchdog
+        kill(ic, SIGUSR2); // to the inspection console
         sleep(1);
 
         fd_zi = open(myfifo_zi, O_WRONLY); 
@@ -52,9 +52,9 @@ static void signal_handler(int sig) {
 
         // Exec task
         switch (number) {
-            case 1: speed += 1; break;
-            case 2: speed -= 1; break;
-            case 3: speed = 0; break;            
+            case 4: speed += 1; break;
+            case 5: speed -= 1; break;
+            case 6: speed = 0; break;            
             default: break;
         }
         printf("Speed: %i\n", speed); fflush(stdout); 
@@ -65,12 +65,13 @@ static void signal_handler(int sig) {
         sprintf(position, format_string, number);
         write(fd_zi, position, strlen(position)+1);
         printf("Position: %s\n\n", position); fflush(stdout); 
-                
+
         // Close PIPE
         close(fd_zi);
+        sleep(1);
     }
 
-    else if (sig == SIGUSR2) {
+    else if (sig == SIGUSR2) { // Inspection console
         // Open PIPE
         fd_zi = open(myfifo_zi, O_RDONLY);
             
@@ -81,7 +82,7 @@ static void signal_handler(int sig) {
         pid_t wd = str[4];
 
         // Send signal to the watchdog
-        kill(wd,7);
+        kill(wd, SIGPROF);
 
         // Exec command
         if (command_i[0] == 'R') {
@@ -98,6 +99,7 @@ static void signal_handler(int sig) {
 
         // Close PIPE
         close(fd_zi);
+        sleep(1);
     }
 
     else if (sig == SIGALRM) {
@@ -107,6 +109,7 @@ static void signal_handler(int sig) {
         speed = 0;
         printf("Position: %s\n", position); fflush(stdout);
         printf("Speed: %i\n\n", speed);
+        sleep(1);
     }
 }
 
@@ -129,7 +132,7 @@ int main() {
 
     // 3.
     FILE *file_r = fopen (filename, "r");
-    fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2],&str[3],&str[4]);
+    fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2], &str[3], &str[4]);
 
     while(1) {
         // Read signal from the command console

@@ -51,6 +51,7 @@ int main() {
     char * myfifo_x = "/tmp/myfifo_x"; 
     mkfifo(myfifo_x, 0666);
     char * myfifo_z = "/tmp/myfifo_z"; 
+    mkfifo(myfifo_z, 0666);
     //if (mkfifo(myfifo_z, 0666) < 0) 
         //printf("ERROR\n");
     char * myfifo_xi = "/tmp/myfifo_xi"; 
@@ -71,7 +72,7 @@ int main() {
         kill(wd, 10);
 
         // Send command to the motors
-        if (1 <= atoi(command) <= 3) {
+        if (command[0] == '1' || command[0] == '2' || command[0] == '3') {
             // Send signal to motor x
             kill(mx, 10);
             sleep(1);
@@ -80,7 +81,7 @@ int main() {
             fd_x = open(myfifo_x, O_WRONLY); 
             write(fd_x, command, strlen(command)+1); 
         }
-        else if (4 <= atoi(command) <= 6) {
+        else if (command[0] == '4' || command[0] == '5' || command[0] == '6') {
             // Send signal to motor z
             kill(mz, 10);
             sleep(1);
@@ -102,7 +103,7 @@ int main() {
 
         // Close PIPE
         close(fd_x); 
-        //close(fd_z); // Manda tutto a puttane
+        close(fd_z);
     }
 
     remove(filename);

@@ -35,8 +35,8 @@ static void signal_handler(int sig) {
         pid_t wd = str[4];
 
         // Send signals
-        kill(wd, 7); // to the watchdog
-        kill(ic, 10); // to the inspection console
+        kill(wd, SIGBUS); // to the watchdog
+        kill(ic, SIGUSR1); // to the inspection console
         sleep(1);
 
         fd_xi = open(myfifo_xi, O_WRONLY); 
@@ -65,9 +65,10 @@ static void signal_handler(int sig) {
         sprintf(position, format_string, number);
         write(fd_xi, position, strlen(position)+1);
         printf("Position: %s\n\n", position); fflush(stdout); 
-                
+
         // Close PIPE
         close(fd_xi);
+        sleep(1);
     }
 
     else if (sig == SIGUSR2) {
@@ -81,7 +82,7 @@ static void signal_handler(int sig) {
         pid_t wd = str[4];
 
         // Send signal to the watchdog
-        kill(wd, 7);
+        kill(wd, SIGBUS);
 
         // Exec command
         if (command_i[0] == 'R') {
@@ -98,6 +99,7 @@ static void signal_handler(int sig) {
 
         // Close PIPE
         close(fd_xi);
+        sleep(1);
     }
 
     else if (sig == SIGALRM) {
@@ -107,6 +109,7 @@ static void signal_handler(int sig) {
         speed = 0;
         printf("Position: %s\n", position); fflush(stdout);
         printf("Speed: %i\n\n", speed);
+        sleep(1);
     }
 }
 

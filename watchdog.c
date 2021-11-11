@@ -23,12 +23,12 @@ static void signal_handler(int sig){
         sleep(1);
     }
     else if (sig == SIGBUS) {
-        printf("The process Motor_x is still active.\n"); fflush(stdout);
+        printf("The process Motor x is still active.\n"); fflush(stdout);
         timer = TIMER;
         sleep(1);
     }
-    else if (sig == SIGKILL) {
-        printf("The process Motor_z is still active.\n"); fflush(stdout);
+    else if (sig == SIGPROF) {
+        printf("The process Motor z is still active.\n"); fflush(stdout);
         timer = TIMER;
         sleep(1);
     } 
@@ -72,7 +72,7 @@ int main(){
         // Signal from the Motor x
         signal(SIGBUS, signal_handler);
         // Signal from the Motor z
-        signal(SIGKILL, signal_handler);
+        signal(SIGPROF, signal_handler);
         // Signal from the Command console to quit
         signal(2, signal_handler);
     

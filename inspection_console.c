@@ -20,10 +20,33 @@ static void signal_handler(int sig){
     if (sig == SIGUSR1) {     
         // Open PIPE
         fd_xi = open(myfifo_xi, O_RDONLY); 
-        fd_zi = open(myfifo_zi, O_RDONLY); 
 
         // Get commands
         read(fd_xi, position_x, 80);
+
+        // Take pid
+        pid_t wd = str[4];
+
+        // Send signal to the watchdog
+        kill(wd, SIGUSR2);
+
+        // Exit
+        if (position_x[0] == 'q') 
+            exit(EXIT_SUCCESS);
+
+        // Print position
+        printf("\nX position: %s \n", position_x); fflush(stdout);
+        printf("Command: "); fflush(stdout);
+
+        // Close PIPE
+        close(fd_xi); 
+    }
+
+    else if (sig == SIGUSR2) {
+        // Open PIPE
+        fd_zi = open(myfifo_zi, O_RDONLY); 
+
+        // Get commands
         read(fd_zi, position_z, 80);
 
         // Take pid
@@ -33,18 +56,17 @@ static void signal_handler(int sig){
         kill(wd, SIGUSR2);
 
         // Exit
-        if (position_x[0] == 'q' || position_z[0] == 'q') 
+        if (position_z[0] == 'q') 
             exit(EXIT_SUCCESS);
 
-        // Print positions
-        printf("\nX position: %s \n", position_x); fflush(stdout);
-        printf("Z position: %s \n", position_z); fflush(stdout);
+        // Print position
+        printf("\nZ position: %s \n", position_z); fflush(stdout);
         printf("Command: "); fflush(stdout);
 
         // Close PIPE
-        close(fd_xi); 
         close(fd_zi); 
     }
+
     else if (sig == SIGALRM) {
         printf("\n\nWatchdog alarm detected, motors are been reset!!\n\nCommand: "); fflush(stdout);
     } 
@@ -82,12 +104,14 @@ int main() {
     printf("Commands:\nR - Reset\nS - Stop\n"); fflush(stdout);
 
     while(1) {
-        printf("Command: ");
-
         // Read signal from motor x
         signal(SIGUSR1, signal_handler);
+        // Read signal from motor z
+        signal(SIGUSR2, signal_handler);
         // Read signal from the watchdog
         signal(SIGALRM, signal_handler);
+
+        printf("Command: ");
 
         // Get command
         fgets(command, 80, stdin); 
@@ -97,7 +121,7 @@ int main() {
         // Send signal to the motor x
         kill(mx, SIGUSR2);
         // Send signal to the motor z
-        kill(mz, SIGUSR1);
+        kill(mz, SIGUSR2);
 
         // Open PIPE to send a Reset or a Stop signal
         fd_xi = open(myfifo_xi, O_WRONLY); 
