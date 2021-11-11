@@ -7,7 +7,7 @@
 #include <stdlib.h> // EXIT_SUCCESS
 #include <signal.h> 
 
-#define TIMER 30
+#define TIMER 60
 
 int timer = TIMER;
 
@@ -32,7 +32,7 @@ static void signal_handler(int sig){
         timer = TIMER;
         sleep(1);
     } 
-    else if (sig == 2) {
+    else if (sig == SIGINT) {
         exit(EXIT_SUCCESS);
     }
 }
@@ -52,12 +52,14 @@ int main(){
     fprintf(file, "%d\n", pid);
     fclose(file);
 
-    //sleep(5);
+    sleep(1);
+
+    printf("Whatchdog is running...\n\n");
 
     // 3.
     FILE *file_r = fopen (filename, "r");
     int str[5]; 
-    fscanf(file_r, "%d %d %d %d", &str[0], &str[1], &str[2],&str[3]);
+    fscanf(file_r, "%d %d %d %d", &str[0], &str[1], &str[2], &str[3]);
 
     pid_t cc = str[0];
     pid_t ic = str[1];
@@ -74,7 +76,7 @@ int main(){
         // Signal from the Motor z
         signal(SIGPROF, signal_handler);
         // Signal from the Command console to quit
-        signal(2, signal_handler);
+        signal(SIGINT, signal_handler);
     
         if(timer == 0) {
             timer = TIMER;

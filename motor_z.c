@@ -6,12 +6,20 @@
 #include <unistd.h> // write and close
 #include <stdlib.h> // EXIT_SUCCESS
 #include <signal.h>
+#include <time.h>
+
+#define Z_MIN 0
+#define Z_MAX 100
+#define SPEED_MIN 0
+#define SPEED_MAX 10
 
 // Global variables
 int fd_z, fd_zi;
-char format_string[80] = "%d";
+char format_string_1[80] = "%d";
+char format_string_2[80] = "%f";
 char command_c[80], command_i[80];
 char position[80] = {'0'};
+double pos_z;
 int number;
 int speed = 0;
 int max_x = 60;
@@ -37,19 +45,19 @@ static void signal_handler(int sig) {
         // Send signals
         kill(wd, SIGPROF); // to the watchdog
         kill(ic, SIGUSR2); // to the inspection console
-        sleep(1);
+        sleep(2);
 
         fd_zi = open(myfifo_zi, O_WRONLY); 
 
         // Exit
         if (command_c[0] == 'q') {
             write(fd_zi, command_c, strlen(command_c)+1); 
+            close(fd_zi);
             exit(EXIT_SUCCESS);
         }
 
-        sscanf(command_c, format_string, &number);
-        printf("Number: %i\n", number); fflush(stdout); 
-
+        sscanf(command_c, format_string_1, &number);
+  
         // Exec task
         switch (number) {
             case 4: speed += 1; break;
@@ -57,13 +65,28 @@ static void signal_handler(int sig) {
             case 6: speed = 0; break;            
             default: break;
         }
-        printf("Speed: %i\n", speed); fflush(stdout); 
+        if (speed > SPEED_MAX) {
+            printf("Speed max reached!!\n"); fflush(stdout); 
+            speed = SPEED_MAX;
+        }
 
         // Send position to the Inspection console
-        sscanf(position, format_string, &number);
-        number += speed;
-        sprintf(position, format_string, number);
+        sscanf(position, format_string_2, &pos_z);
+        srand(time(0));
+        int r = rand() % 10;
+        double error = (int)r / 100.0;
+        pos_z += speed + error;
+        if (pos_z < Z_MIN) {
+            pos_z = Z_MIN;
+            speed = SPEED_MIN;
+        }
+        else if (pos_z > Z_MAX) {
+            pos_z = Z_MAX;
+            speed = SPEED_MIN;
+        }
+        sprintf(position, format_string_2, pos_z);
         write(fd_zi, position, strlen(position)+1);
+        printf("Speed: %i\n", speed); fflush(stdout); 
         printf("Position: %s\n\n", position); fflush(stdout); 
 
         // Close PIPE
@@ -86,15 +109,11 @@ static void signal_handler(int sig) {
 
         // Exec command
         if (command_i[0] == 'R') {
-            number = 0;
-            sprintf(position, format_string, number);
+            pos_z = 0;
+            sprintf(position, format_string_2, pos_z);
             speed = 0;
-            printf("Position: %s\n", position);
-            printf("Speed: %i\n", speed);
-        }
-        else if (command_i[0] == 'S') {
-            speed = 0;
-            printf("Speed: %i\n", speed);
+            printf("Speed: %i\n", speed); fflush(stdout); 
+            printf("Position: %s\n", position); fflush(stdout); 
         }
 
         // Close PIPE
@@ -104,12 +123,21 @@ static void signal_handler(int sig) {
 
     else if (sig == SIGALRM) {
         printf("Watchdog alarm detected: reset speed and position!!\n"); fflush(stdout);
-        number = 0;
-        sprintf(position, format_string, number);
+        pos_z = 0;
+        sprintf(position, format_string_2, pos_z);
         speed = 0;
-        printf("Position: %s\n", position); fflush(stdout);
-        printf("Speed: %i\n\n", speed);
+        printf("Speed: %i\n", speed); fflush(stdout);
+        printf("Position: %s\n\n", position); fflush(stdout);
         sleep(1);
+    }
+    
+    else if (sig == SIGBUS) {
+        speed = 0;
+        printf("\nStop signal detected!\nSpeed: %i\n", speed); fflush(stdout); 
+    }
+
+    else if (sig == SIGINT) {
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -128,7 +156,9 @@ int main() {
     fprintf(file, "%d\n", pid);
     fclose(file);
 
-    sleep(5);
+    sleep(2);
+
+    printf("Motor z is running...\n\n");
 
     // 3.
     FILE *file_r = fopen (filename, "r");
@@ -141,10 +171,30 @@ int main() {
         signal(SIGUSR2, signal_handler);
         // Read signal from the watchdog
         signal(SIGALRM, signal_handler);
+        // Read signal from the command console to exit
+        signal(SIGINT, signal_handler);
+        // Read signal from the inspection console to stop
+        signal(SIGBUS, signal_handler);
 
-        sleep(10);
-        number += speed;
-        sprintf(position, format_string, number);
+        sleep(5);
+        sleep(5);
+        if (speed != 0) {
+            srand(time(0));
+            int r = rand() % 10;
+            double error = (int)r / 100.0;
+            pos_z += speed + error;
+        }
+        else 
+            pos_z += speed;
+        if (pos_z < Z_MIN) {
+            pos_z = Z_MIN;
+            speed = SPEED_MIN;
+        }
+        else if (pos_z > Z_MAX) {
+            pos_z = Z_MAX;
+            speed = SPEED_MIN;
+        }
+        sprintf(position, format_string_2, pos_z);
         printf("Update position: %s\n\n", position); 
         fflush(stdout);
     }

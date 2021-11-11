@@ -5,7 +5,6 @@
 #include <sys/types.h> // PIPE
 #include <unistd.h> // write and close
 #include <stdlib.h> // EXIT_SUCCESS
-#include <unistd.h>
 #include <signal.h>
 
 static void signal_handler(int sig) {
@@ -43,6 +42,7 @@ int main() {
     fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2], &str[3], &str[4]);
     
     // Take pids
+    pid_t ic = str[1]; // inspection console
     pid_t mx = str[2]; // motor_x
     pid_t mz = str[3]; // motor_z
     pid_t wd = str[4]; // watchdog
@@ -52,14 +52,12 @@ int main() {
     mkfifo(myfifo_x, 0666);
     char * myfifo_z = "/tmp/myfifo_z"; 
     mkfifo(myfifo_z, 0666);
-    //if (mkfifo(myfifo_z, 0666) < 0) 
-        //printf("ERROR\n");
     char * myfifo_xi = "/tmp/myfifo_xi"; 
     mkfifo(myfifo_xi, 0666);
     char * myfifo_zi = "/tmp/myfifo_zi"; 
     mkfifo(myfifo_zi, 0666); 
 
-    printf("Commands:\n1 - X axis increase\n2 - X axis decrease\n3 - X axis stop\n4 - Z axis increase\n5 - Z axis decrease\n6 - Z axis stop\n"); fflush(stdout);
+    printf("Commands:\n1 - X axis increase\n2 - X axis decrease\n3 - X axis stop\n4 - Z axis increase\n5 - Z axis decrease\n6 - Z axis stop\nPress 'q' to quit\n"); fflush(stdout);
 
     while (1) { 
         // Wait for signal from the watchdog
@@ -69,12 +67,12 @@ int main() {
 
         // Get command
         fgets(command, 80, stdin); 
-        kill(wd, 10);
+        kill(wd, SIGUSR1);
 
         // Send command to the motors
         if (command[0] == '1' || command[0] == '2' || command[0] == '3') {
             // Send signal to motor x
-            kill(mx, 10);
+            kill(mx, SIGUSR1);
             sleep(1);
 
             // Open PIPE
@@ -83,7 +81,7 @@ int main() {
         }
         else if (command[0] == '4' || command[0] == '5' || command[0] == '6') {
             // Send signal to motor z
-            kill(mz, 10);
+            kill(mz, SIGUSR1);
             sleep(1);
             
             // Open PIPE
@@ -91,13 +89,14 @@ int main() {
             write(fd_z, command, strlen(command)+1); 
         }
         else  
-            printf("Command not valid, insert and integer value between 1 and 6 or 0 to quit.\n"); fflush(stdout);
+            printf("Command not valid, insert and integer value between 1 and 6 or type 'q' to quit.\n"); fflush(stdout);
         
         // Exit
-        if (atoi(command) == 0) {
-            kill(wd, 2);
-            write(fd_x, command, strlen(command)+1); 
-            write(fd_z, command, strlen(command)+1); 
+        if (command[0] == 'q') {
+            kill(wd, SIGINT);
+            kill(mx, SIGINT);
+            kill(mz, SIGINT);
+            kill(ic, SIGINT);
             exit(EXIT_SUCCESS);
         }
 

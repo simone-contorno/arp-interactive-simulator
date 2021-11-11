@@ -31,8 +31,10 @@ static void signal_handler(int sig){
         kill(wd, SIGUSR2);
 
         // Exit
-        if (position_x[0] == 'q') 
+        if (position_x[0] == 'q') {
+            close(fd_xi);
             exit(EXIT_SUCCESS);
+        }
 
         // Print position
         printf("\nX position: %s \n", position_x); fflush(stdout);
@@ -56,8 +58,10 @@ static void signal_handler(int sig){
         kill(wd, SIGUSR2);
 
         // Exit
-        if (position_z[0] == 'q') 
+        if (position_z[0] == 'q') {
+            close(fd_zi); 
             exit(EXIT_SUCCESS);
+        }
 
         // Print position
         printf("\nZ position: %s \n", position_z); fflush(stdout);
@@ -70,6 +74,10 @@ static void signal_handler(int sig){
     else if (sig == SIGALRM) {
         printf("\n\nWatchdog alarm detected, motors are been reset!!\n\nCommand: "); fflush(stdout);
     } 
+
+    else if (sig == SIGINT) {
+        exit(EXIT_SUCCESS);
+    }
 }
 
 int main() {
@@ -92,11 +100,11 @@ int main() {
     fprintf(file, "%d\n", pid);
     fclose(file);
 
-    sleep(5);
+    sleep(4);
 
     // 3.
     FILE *file_r = fopen (filename, "r");
-    fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2],&str[3],&str[4]);
+    fscanf(file_r, "%d %d %d %d %d", &str[0], &str[1], &str[2], &str[3], &str[4]);
     pid_t mx = str[2];
     pid_t mz = str[3];
     pid_t wd = str[4]; 
@@ -110,6 +118,8 @@ int main() {
         signal(SIGUSR2, signal_handler);
         // Read signal from the watchdog
         signal(SIGALRM, signal_handler);
+        // Read signal from the command console to exit
+        signal(SIGINT, signal_handler);
 
         printf("Command: ");
 
@@ -118,26 +128,36 @@ int main() {
 
         // Send signal to the watchdog
         kill(wd, SIGUSR2);
-        // Send signal to the motor x
-        kill(mx, SIGUSR2);
-        // Send signal to the motor z
-        kill(mz, SIGUSR2);
-
-        // Open PIPE to send a Reset or a Stop signal
-        fd_xi = open(myfifo_xi, O_WRONLY); 
-        fd_zi = open(myfifo_zi, O_WRONLY); 
-
+       
         // Send command
-        if (command[0] == 'R' || command[0] == 'S') {
+        if (command[0] == 'R') {
+            // Send signal to the motor x
+            kill(mx, SIGUSR2);
+            // Send signal to the motor z
+            kill(mz, SIGUSR2);
+            // Open PIPE to send a Reset or a Stop signal
+            fd_xi = open(myfifo_xi, O_WRONLY); 
+            fd_zi = open(myfifo_zi, O_WRONLY); 
+
             write(fd_xi, command, strlen(command)+1); 
             write(fd_zi, command, strlen(command)+1); 
+
+            // Close PIPE
+            close(fd_xi); 
+            close(fd_zi); 
+        }
+        else if (command[0] == 'S') {
+            // Send STOP signal to the motor x
+            kill(mx, SIGBUS);
+            // Send STOP signal to the motor z
+            kill(mz, SIGBUS);
         }
         else
-            printf("Command not valid, insert and integer value between 1 and 6 or 0 to quit.\n"); fflush(stdout);
+            printf("Command not valid, type 'R' to reset or 'S' to stop.\n"); fflush(stdout);
 
         // Close PIPE
-        close(fd_xi); 
-        close(fd_zi); 
+        //close(fd_xi); 
+        //close(fd_zi); 
     }
 
     return 0;
