@@ -60,9 +60,9 @@ There are 5 processes that work as follow:
     case all processes did nothing (no computation, no motion, no input/output) for a certain time.</li>
 </ol>
 
-    The motor process simulates the constant speed motion, including a simple error in position
-    measurement. They receives a command (move, stop, go to zero position), acts, sends back a position
-    estimate, stops when the end displacement is reached. 
+The motor process simulates the constant speed motion, including a simple error in position
+measurement. They receives a command (move, stop, go to zero position), acts, sends back a position
+estimate, stops when the end displacement is reached. 
 
 <a name="installation"></a>
 ### Installation and Execution
@@ -75,33 +75,31 @@ git clone https://github.com/simone-contorno/ARP-Assignment-1
 </code>
 </pre>
 
-Extract the directory and type:
+After, to compile the source files, go into the directory and type:
 
 <pre>
 <code>
-./install.sh <pathname>
+./install.sh
 </code>
 </pre>
 
-where <pathname> indicates where unzip the directory 'src'.<br>
-After, to exec the program, type:
+Now, to exec the program, type:
 
 <pre>
 <code>
-./run.sh <pathname>
+./run.sh 
 </code>
 </pre>
 
-If you want read some specific descriptio about a process, type:
+If you want read some specific description about a process, type:
 
 <pre>
 <code>
-./help.sh <pathname> <number>
+./help.sh <number>
 </code>
 </pre>
 
-where <pathname> is the same that you have used with ./install.sh <pathname>,
-while <number> will provide you the corresponding process text file description.
+where <number> is the corresponding process text file description.
 
 <a name="con"></a>
 ### Conclusion
