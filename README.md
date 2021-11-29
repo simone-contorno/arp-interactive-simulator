@@ -18,7 +18,7 @@ How install and run this program in Linux.<br>
 
 ### Conclusion
 Conclusion.<br>
-[Go to Couclusion](#conclusion)
+[Go to Conclusion](#con)
 
 <a name="intro"></a>
 ### Introduction
@@ -103,7 +103,7 @@ If you want read some specific descriptio about a process, type:
 where <pathname> is the same that you have used with ./install.sh <pathname>,
 while <number> will provide you the corresponding process text file description.
 
-<a name="conclusion"></a>
+<a name="con"></a>
 ### Conclusion
 
 Thanks to have read this file, i hope it was clear and interesting.<br>
