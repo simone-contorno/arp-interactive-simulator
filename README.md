@@ -103,11 +103,11 @@ If you want read some specific description about a process, type:
 
 <pre>
 <code>
-./help.sh <number>
+./help.sh < number >
 </code>
 </pre>
 
-where <number> is the corresponding process text file description.
+where < number > is the corresponding process text file description.
 
 <a name="con"></a>
 ### Conclusion
