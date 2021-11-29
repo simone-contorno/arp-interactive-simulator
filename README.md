@@ -75,7 +75,15 @@ git clone https://github.com/simone-contorno/ARP-Assignment-1
 </code>
 </pre>
 
-After, to compile the source files, go into the directory and type:
+After, to compile the source files, go into the directory and make executable all .sh files:
+
+<pre>
+<code>
+chmod +x install.sh run.sh help.sh
+</code>
+</pre>
+
+To compile the source files, type:
 
 <pre>
 <code>
