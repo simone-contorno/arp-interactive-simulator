@@ -1,0 +1,1 @@
+cat $1/sources/process_$2/text_file.txt
