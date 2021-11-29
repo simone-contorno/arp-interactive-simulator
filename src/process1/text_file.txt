@@ -1,3 +1,4 @@
+
 # PROCESS 1 - COMMAND CONSOLE
 
 
@@ -46,3 +47,4 @@
        console catch the alarm signal sent by watchdog and 
        through the signal_handler function it handles the 
        alarm signal.
+
