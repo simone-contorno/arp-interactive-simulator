@@ -1,1 +1,1 @@
-cat $1/sources/process_$2/text_file.txt
+cat src/process$1/text_file.txt
