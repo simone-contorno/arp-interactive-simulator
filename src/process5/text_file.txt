@@ -24,7 +24,7 @@
 		It handles the signals using the signal handler function
 		that reset the timer at its initial value (60 seconds).
    	
-    ### ALARM : 
+ 	### ALARM : 
    
 		When the timer goes to zero, it means that the four 
 		processes aren't active from 60 seconds, so the watchdog 
