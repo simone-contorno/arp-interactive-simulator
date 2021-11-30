@@ -4,10 +4,10 @@
 
 ## THE AIM OF INSPECTION CONSOLE :
 
-	In this project the inspection console is 
-	used for two purposes :
+  In this project the inspection console is 
+  used for two purposes :
 	
-	* To receive from motors the hoist positions 
+  	* To receive from motors the hoist positions 
 	  while it is moving, and reporting them on the 
 	  screen
 	
@@ -15,12 +15,12 @@
 	  buttons
 	
 ## HOW IT WORKS : 
-
-	This process uses a combination of SIGNALS and 
-	NAMED PIPE for implementing the communication 
-	with the Motor X and Motor Z processes whereas it
-	uses only SIGNAL to communicate with the watchdog 
-	process and to implement the Stop button.
+  
+  This process uses a combination of SIGNALS and 
+  NAMED PIPE for implementing the communication 
+  with the Motor X and Motor Z processes whereas it
+  uses only SIGNAL to communicate with the watchdog 
+  process and to implement the Stop button.
 	
   ### STOP AND RESET BUTTONS :
       
@@ -49,17 +49,17 @@
        
   ### COMMUNICATION WITH MOTORS :
    
-   	The motors have to send ,to the inspection console, 
+    The motors have to send ,to the inspection console, 
     the hoist positions (while it is moving) and the 
-   	inspection console has to reporting them on the screen.
-   	To do this we use Signals, so the inspection console 
-   	catches the signal (with the signal system call) when 
-   	the motor has written the position and with a specific 
-   	signal handler, read the position using the named pipe
-   	and reports the position on the screen.
+    inspection console has to reporting them on the screen.
+    To do this we use Signals, so the inspection console 
+    catches the signal (with the signal system call) when 
+    the motor has written the position and with a specific 
+    signal handler, read the position using the named pipe
+    and reports the position on the screen.
    	
   ### COMMUNICATION WITH WATCHDOG :
-      
+      	
     When the inspection console receives a Reset or Stop
     command in input and when it receives the hoist positions
     from the motors, sends a signal to the watchdog in 
