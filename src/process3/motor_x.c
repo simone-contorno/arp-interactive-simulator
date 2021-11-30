@@ -23,6 +23,7 @@ int number;
 int speed = 0;
 int max_x = 60;
 int str[5]; 
+int pos_flag = 1;
 
 // PIPE 
 char * myfifo_x = "/tmp/myfifo_x"; 
@@ -99,9 +100,10 @@ static void signal_handler(int sig) {
 
         // Exec command
         if (command_i[0] == 'R') {
-            pos_x = 0;
+            pos_flag = 1;
+            if (pos_x != 0)
+                speed = -5;
             sprintf(position, format_string_2, pos_x);
-            speed = 0;
             printf("Speed: %i\n", speed); fflush(stdout); 
             printf("Position: %s\n", position); fflush(stdout); 
 
@@ -113,10 +115,11 @@ static void signal_handler(int sig) {
     }
 
     else if (sig == SIGALRM) {
+        pos_flag = 1;
         printf("Watchdog alarm detected: reset speed and position!!\n"); fflush(stdout);
-        pos_x = 0;
+        if (pos_x != 0)
+            speed = -5;
         sprintf(position, format_string_2, pos_x);
-        speed = 0;
         printf("Speed: %i\n", speed); fflush(stdout);
         printf("Position: %s\n\n", position); fflush(stdout);
         sleep(1);
@@ -167,8 +170,7 @@ int main() {
         // Read signal from the inspection console to stop
         signal(SIGBUS, signal_handler);
 
-        sleep(5);
-        sleep(5);
+        sleep(10);
         if (speed != 0) {
             srand(time(0));
             int r = rand() % 10;
@@ -190,18 +192,23 @@ int main() {
         pid_t wd = str[4];
 
         // Send signals
-        kill(wd, SIGBUS); // to the watchdog
-        kill(ic, SIGUSR1); // to the inspection console
+        if (speed != 0 || pos_flag == 1) {
+            kill(wd, SIGBUS); // to the watchdog
+            kill(ic, SIGUSR1); // to the inspection console
 
-        fd_xi = open(myfifo_xi, O_WRONLY); 
+            fd_xi = open(myfifo_xi, O_WRONLY); 
 
-        sprintf(position, format_string_2, pos_x);
-        write(fd_xi, position, strlen(position)+1);
+            sprintf(position, format_string_2, pos_x);
+            write(fd_xi, position, strlen(position)+1);
         
-        printf("Update position: %s\n\n", position); 
-        fflush(stdout);
+            printf("Update position: %s\n\n", position); 
+            fflush(stdout);
 
-        close(fd_xi);
+            close(fd_xi);
+
+            if (speed >= 0)
+                pos_flag = 0;
+        }
     }
 
     return 0;
