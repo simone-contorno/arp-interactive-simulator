@@ -54,7 +54,7 @@ int main(){
 
     sleep(1);
 
-    printf("Whatchdog is running...\nTimer: %i [s]", TIMER);
+    printf("Whatchdog is running...\nTimer: %i [s]\n", TIMER);
     fflush(stdout);
     
     // 3.
@@ -93,7 +93,7 @@ int main(){
 
         sleep(1);
         if (timer % 5 == 0)
-            //printf("Timer: %i\n", timer);
+            printf("Timer: %i\n", timer);
         timer--;
     }
      
