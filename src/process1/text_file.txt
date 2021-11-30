@@ -4,20 +4,20 @@
 
 ## THE AIM OF COMMAND CONSOLE :
 
-	In this project the command console is used to 
-	receive the commands from user in input and 
-	therefore to manage the motors behavior. 
-	For instance the user can choose to increase 
-	the motor x speed by typing the number 1 from the 
-	keyboard.  
+  In this project the command console is used to 
+  receive the commands from user in input and 
+  therefore to manage the motors behavior. 
+  For instance the user can choose to increase 
+  the motor x speed by typing the number 1 from the 
+  keyboard.  
 	
 ## HOW IT WORKS :
 	
-	This process uses a combination of SIGNALS and 
-	NAMED PIPE for implementing the communication 
-	with other processes (Motor x and z) whereas it
-	uses only SIGNAL to communicate with the watchdog 
-	process.
+  This process uses a combination of SIGNALS and 
+  NAMED PIPE for implementing the communication 
+  with other processes (Motor x and z) whereas it
+  uses only SIGNAL to communicate with the watchdog 
+  process.
 	
    ### COMMUNICATION WITH MOTORS :
       
