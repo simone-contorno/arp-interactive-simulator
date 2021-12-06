@@ -69,43 +69,23 @@ estimate, stops when the end displacement is reached.
 
 Download the repository:
 
-<pre>
-<code>
-git clone https://github.com/simone-contorno/ARP-Assignment-1
-</code>
-</pre>
+<pre><code>git clone https://github.com/simone-contorno/ARP-Assignment-1</code></pre>
 
 After, go into the directory and make executable all .sh files:
 
-<pre>
-<code>
-chmod +x install.sh run.sh help.sh
-</code>
-</pre>
+<pre><code>chmod +x install.sh run.sh help.sh</code></pre>
 
 To compile the source files, type:
 
-<pre>
-<code>
-./install.sh
-</code>
-</pre>
+<pre><code>./install.sh</code></pre>
 
 Now, to exec the program, type:
 
-<pre>
-<code>
-./run.sh 
-</code>
-</pre>
+<pre><code>./run.sh </code></pre>
 
 If you want read some specific description about a process, type:
 
-<pre>
-<code>
-./help.sh < number >
-</code>
-</pre>
+<pre><code>./help.sh < number ></code></pre>
 
 where < number > is the corresponding process text file description.
 
