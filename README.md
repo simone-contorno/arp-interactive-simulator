@@ -1,6 +1,6 @@
-# Advanced and Robot Programming
-## Interactive simulator of hoist with 2 d.o.f.
-### Robotics Engineering - Simone Contorno
+# ARP-Interactive-Simulator
+## Advanced and Robot Programming - Interactive simulator of hoist with 2 d.o.f.
+### Author: Simone Contorno
 
 <br>
 
