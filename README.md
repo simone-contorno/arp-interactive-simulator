@@ -23,7 +23,7 @@ Conclusion.<br>
 <a name="intro"></a>
 ### Introduction
 
-This program test and deploy is an interactive simulator of hoist with 2 d.o.f., 
+This program test and deploy an interactive simulator of hoist with 2 d.o.f., 
 in which two different consoles allow the user to activate the hoist.<br>
 In the octagonal box there are two motors motor_x and motor_z, 
 which displace the hoist along the two respective axes.<br>
