@@ -1,6 +1,5 @@
-# ARP-Interactive-Simulator
-## Advanced and Robot Programming - Interactive simulator of hoist with 2 d.o.f.
-### Author: Simone Contorno
+# Advanced and Robot Programming - Interactive simulator of hoist with 2 d.o.f.
+## Author: Simone Contorno
 
 <br>
 
@@ -69,7 +68,7 @@ estimate, stops when the end displacement is reached.
 
 Download the repository:
 
-<pre><code>git clone https://github.com/simone-contorno/ARP-Assignment-1</code></pre>
+<pre><code>git clone https://github.com/simone-contorno/arp-interactive-simulator</code></pre>
 
 After, go into the directory and make executable all .sh files:
 
